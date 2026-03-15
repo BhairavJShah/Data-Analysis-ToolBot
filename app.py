@@ -131,12 +131,15 @@ def auth_page():
     with tab1:
         u = st.text_input("Username", key="login_u")
         p = st.text_input("Password", type="password", key="login_p")
+        force_login = st.checkbox("Force Login (If you are stuck)")
+        
         if st.button("Login"):
             db = get_user_db(repo)
             if u in db and db[u] == hash_password(p):
                 is_locked, sid = check_lock(repo, u)
-                if is_locked:
+                if is_locked and not force_login:
                     st.error(f"User '{u}' is already logged in elsewhere!")
+                    st.info("Check 'Force Login' above if you closed your previous window.")
                 else:
                     st.session_state.authenticated = True
                     st.session_state.username = u
