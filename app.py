@@ -21,7 +21,7 @@ except:
     GITHUB_REPO = os.getenv("GITHUB_REPO")
 
 # --- Page Configuration ---
-st.set_page_config(page_title="Data Analysis ToolBot", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="Data Analysis ToolBot Pro", page_icon="🤖", layout="wide")
 
 # --- Session State Initialization ---
 if 'authenticated' not in st.session_state:
@@ -55,14 +55,20 @@ st.markdown("""
 
 # --- GitHub Logic ---
 def get_repo():
-    if not GITHUB_TOKEN or not GITHUB_REPO:
+    if not GITHUB_TOKEN:
+        st.error("Missing GITHUB_TOKEN. Please add it to Streamlit Secrets.")
+        return None
+    if not GITHUB_REPO:
+        st.error("Missing GITHUB_REPO. Please add it to Streamlit Secrets.")
         return None
     try:
         g = Github(GITHUB_TOKEN)
         repo = g.get_repo(GITHUB_REPO)
+        # Force a small call to verify connectivity
+        _ = repo.full_name
         return repo
     except Exception as e: 
-        st.sidebar.error(f"GitHub Connection Error: {e}")
+        st.error(f"GitHub API Error: {e}")
         return None
 
 def hash_password(password):
@@ -118,7 +124,6 @@ def auth_page():
     st.title("🔐 Data Analysis ToolBot Login")
     repo = get_repo()
     if not repo:
-        st.error("GitHub Connection Failed. Check your Token.")
         return
 
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
