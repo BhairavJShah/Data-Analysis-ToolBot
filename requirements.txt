@@ -7,3 +7,4 @@ seaborn
 google-generativeai
 PyGithub
 openpyxl
+python-dotenv
