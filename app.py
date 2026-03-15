@@ -11,10 +11,14 @@ import json
 from datetime import datetime, timedelta
 from io import StringIO
 
-# --- Load Environment Variables ---
+# --- Load Environment Variables (Support for Local .env and Streamlit Cloud Secrets) ---
 load_dotenv()
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_REPO = os.getenv("GITHUB_REPO")
+try:
+    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+    GITHUB_REPO = st.secrets["GITHUB_REPO"]
+except:
+    GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+    GITHUB_REPO = os.getenv("GITHUB_REPO")
 
 # --- Page Configuration ---
 st.set_page_config(page_title="Data Analysis ToolBot", page_icon="🤖", layout="wide")
@@ -51,10 +55,15 @@ st.markdown("""
 
 # --- GitHub Logic ---
 def get_repo():
+    if not GITHUB_TOKEN or not GITHUB_REPO:
+        return None
     try:
         g = Github(GITHUB_TOKEN)
-        return g.get_repo(GITHUB_REPO)
-    except: return None
+        repo = g.get_repo(GITHUB_REPO)
+        return repo
+    except Exception as e: 
+        st.sidebar.error(f"GitHub Connection Error: {e}")
+        return None
 
 def hash_password(password):
     return hashlib.sha256(str.encode(password)).hexdigest()
