@@ -184,7 +184,23 @@ def main_dashboard():
         try:
             contents = repo.get_contents(f"users/{user}/data")
             files = [c.name for c in contents if c.name.endswith('.csv')]
-            sel = st.selectbox("Reload My Data", ["None"] + files)
+            if files:
+                col_sel, col_del = st.columns([3, 1])
+                with col_sel:
+                    sel = st.selectbox("Reload My Data", ["None"] + files, label_visibility="collapsed")
+                with col_del:
+                    if sel != "None":
+                        if st.button("🗑️", help="Delete selected file"):
+                            try:
+                                f_to_del = repo.get_contents(f"users/{user}/data/{sel}")
+                                repo.delete_file(f_to_del.path, f"Delete {sel}", f_to_del.sha)
+                                st.success(f"Deleted {sel}")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+            else:
+                st.info("No saved data found.")
+                sel = "None"
         except: sel = "None"
         
         st.markdown("---")
